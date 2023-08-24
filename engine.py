@@ -1,11 +1,3 @@
-from sqlmodel import SQLModel
-import os
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
-
-DATABASE_URL = os.environ.get("DATABASE_URL")
-
 # engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
 
@@ -20,4 +12,16 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 #         engine, class_=AsyncSession, expire_on_commit=False
 #     )
 #     async with async_session() as session:
-#         yield session
+#         yield sessionfrom sqlalchemy import create_engine
+
+from setup import settings
+from sqlmodel import Session, create_engine, SQLModel
+
+
+SQLALCHEMY_DATABASE_URL = settings["db"]["uri"]
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
