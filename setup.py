@@ -26,7 +26,7 @@ AUTH_ACCESS_TOKEN_EXPIRE_MINUTES = os.environ["AUTH_ACCESS_TOKEN_EXPIRE_MINUTES"
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
 
-SQLALCHEMY_DATABASE_URL = "postgresql://%s:%s@%s:%s/%s" % (
+SQLALCHEMY_DATABASE_URL = "postgresql+asyncpg://%s:%s@%s:%s/%s" % (
     DATABASE_USER,
     DATABASE_PASSWORD,
     DATABASE_URI,

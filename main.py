@@ -1,12 +1,20 @@
 
 from fastapi import Request, Response, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from engine import SQLModel, engine
+from engine import engine, init_db
+from sqlmodel import SQLModel
+
 from middleware.scraping.service import router as scraping_router
+from src.stock.service import router as stock_router
 
 app = FastAPI(debug=True)
 
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
+
 app.include_router(scraping_router, prefix="/middleware")
+app.include_router(stock_router, prefix="/stock")
 
 origins = ["*"]
 
@@ -29,10 +37,10 @@ app.add_middleware(
 )
 
 
-@app.on_event("startup")
-def create_and_fill_database():
-    # SQLModel.metadata.drop_all(engine)
-    SQLModel.metadata.create_all(engine)
+# @app.on_event("startup")
+# def create_and_fill_database():
+#     # SQLModel.metadata.drop_all(engine)
+#     SQLModel.metadata.create_all(engine)
 
 
 if __name__ == "__main__":

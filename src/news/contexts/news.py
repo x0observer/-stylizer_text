@@ -7,6 +7,7 @@ class NewsBase(SQLModel):
     date_text: Optional[str]
     title_text: Optional[str]
     summary_text: Optional[str]
+    content_text: Optional[str]
     publication_in: Optional[datetime]
 
 

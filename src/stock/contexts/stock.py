@@ -5,5 +5,5 @@ from datetime import datetime
 class StockBase(SQLModel):
     title: Optional[str]
     symbol: Optional[str]
-    activate_at: Optional[datetime]
+    activate_at: Optional[datetime] = Field(None)
 
