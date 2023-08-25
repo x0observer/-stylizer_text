@@ -6,15 +6,18 @@ from sqlmodel import SQLModel
 
 from middleware.scraping.service import router as scraping_router
 from src.stock.service import router as stock_router
-
+from src.profile.service import router as profile_router
 app = FastAPI(debug=True)
 
 @app.on_event("startup")
 async def on_startup():
     await init_db()
 
+
 app.include_router(scraping_router, prefix="/middleware")
 app.include_router(stock_router, prefix="/stock")
+app.include_router(profile_router, prefix="/profile")
+
 
 origins = ["*"]
 

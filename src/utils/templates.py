@@ -2,6 +2,9 @@ from sqlmodel import SQLModel
 from typing import Optional
 from datetime import datetime
 from sqlmodel import Session
+from engine import *
+from typing import List
+from sqlalchemy.exc import IntegrityError
 import hashlib
 
 
@@ -28,6 +31,7 @@ class DateTrim:
 
     def __init__(self, original_text: str, WHITESPACE_TRIM=" ", PHASE_TRIM=":") -> None:
         uniform_text = original_text.lower()
+        print("uniform_text:", uniform_text)
         uniform_subjects = original_text.split(WHITESPACE_TRIM)
         uniform_subtime = uniform_subjects[-1].split(PHASE_TRIM)
         for uniform_date_placeholder in DateTrim.MONTH_PLACEHOLDERS:
@@ -40,7 +44,7 @@ class DateTrim:
                     "hour": int(uniform_subtime[0]),
                     "minute": int(uniform_subtime[-1])
                 }
-
+                print("date_args:", date_args)
                 self.datetime = datetime(**date_args)
                 break
 
@@ -53,6 +57,18 @@ def sign(string_to_hash, length=16):
     hex_dig = hash_object.hexdigest()
     truncated_hex_dig = hex_dig[:length]
     return truncated_hex_dig
+
+
+async def insert_unique_objects(db: AsyncSession, objects: List[SQLModel]):
+    for obj in objects:
+        try:
+            db.add(obj)
+            await db.flush()
+        except IntegrityError:
+                # Handle the unique constraint violation (skip the duplicate)
+            db.rollback()
+            continue
+        await db.commit()
 
 
 test_cases = ["23 августа в 20:29", "19 июля в 13:59"]

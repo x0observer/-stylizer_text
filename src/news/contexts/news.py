@@ -8,6 +8,8 @@ class NewsBase(SQLModel):
     title_text: Optional[str]
     summary_text: Optional[str]
     content_text: Optional[str]
+    sign: Optional[str] = Field(unique=True)
+    is_fresh: Optional[bool] = Field(True)
     publication_in: Optional[datetime]
 
 

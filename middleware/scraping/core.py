@@ -4,11 +4,15 @@ from playwright.sync_api import sync_playwright
 from playwright.async_api import async_playwright
 import time
 from random import randint
+from bs4 import BeautifulSoup
 
-from src.register import News
+from src.register import *
 from src.news.contexts.news import NewsBase
 from src.utils.templates import *
 import asyncio
+
+
+import re
 
 
 def sorting_by_publication_date(obj):
@@ -19,11 +23,13 @@ class Mediator:
     BASE_TIMESPAN = 1
     LOGOUT_TIMESPAN = 4
 
-    def __init__(self):
-        self.settings: dict = {}  # TODO: SETTING APPLY
+    def __init__(self, stock: SQLModel = None):
+        # TODO: SETTING APPLY
+        self.stock = stock
 
+    async def run(self, playwright, base_timespan=BASE_TIMESPAN, logout_timespan=LOGOUT_TIMESPAN, source_url: str = "https://bcs-express.ru", subquery_span="/category", query_span: str = "/category?tag=/{/}", trim="/{/}", extracted_news: News = []):
+        query_symbol = self.stock.symbol
 
-    async def run(self, playwright, base_timespan=BASE_TIMESPAN, logout_timespan=LOGOUT_TIMESPAN, query_symbol: str = "mts", source_url: str = "https://bcs-express.ru", subquery_span="/category", query_span: str = "/category?tag=/{/}", trim="/{/}", extracted_news: News = []):
         print("__chromium_launch__")
         chromium = playwright.firefox
         browser = await chromium.launch()  # Use await here
@@ -62,6 +68,14 @@ class Mediator:
                 link_href = source_url + await link_element.get_attribute('href')
 
                 date_text = await (await element.query_selector('.%s__date' % subject)).inner_text()
+
+                try:
+
+                    date_trim = DateTrim(date_text)
+
+                except ValueError:
+                    break
+
                 title_text = await (await element.query_selector('.%s__title' % subject)).inner_text()
                 summary_text = await (await element.query_selector('.%s__summary' % subject)).inner_text()
 
@@ -81,12 +95,17 @@ class Mediator:
                 print(targeted_div_content)
                 print("-----")
 
-                date_trim = DateTrim(date_text)
-                extracted_news.append(News.from_orm(NewsBase(link_href=link_href, date_text=date_text,
-                                    title_text=title_text, summary_text=summary_text, publication_in=date_trim())))
-            except AttributeError:
+                HTML_TAGS_PATTERN = '<[^<]+?>'
+                EMPTY_PLACEHOLDER = ""
+
+                cleared_content = re.sub(
+                    HTML_TAGS_PATTERN, EMPTY_PLACEHOLDER, str(targeted_div_content))
+
+                extracted_news.append(News(**NewsBase(link_href=link_href, date_text=date_text,
+                                                      title_text=title_text, summary_text=summary_text, publication_in=date_trim(), content_text=cleared_content).dict(), stock_id=self.stock.id))
+            except AttributeError or ValueError:
                 continue
-            
+
         await browser.close()  # Use await here
         extracted_news = sorted(
             extracted_news, key=sorting_by_publication_date)

@@ -4,20 +4,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 
-# from fastapi import FastAPI, Depends, APIRouter, HTTPException
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from datetime import datetime
-# from typing import List, Optional
-# from sqlalchemy import Column, Integer, String, DateTime
-# from sqlalchemy.orm import declarative_base, sessionmaker
-
-
-# from engine import get_async_session
-
-
 from src.register import *
-
-# router = APIRouter()
 
 
 class StockRepository:
@@ -37,7 +24,7 @@ class StockRepository:
         query = select(Stock).where(Stock.id == stock_id)
         execute = await self.db.execute(query)
         stock = execute.scalars().one_or_none()
-        
+
         if stock:
             for attr, value in updated_stock.dict().items():
                 if value is not None:
@@ -45,12 +32,12 @@ class StockRepository:
             await self.db.commit()
             await self.db.refresh(stock)
         return stock
-    
+
     async def patch_stock(self, stock_id: int, patch_data: dict) -> Optional[Stock]:
         query = select(Stock).where(Stock.id == stock_id)
         execute = await self.db.execute(query)
         stock = execute.scalars().one_or_none()
-        
+
         if stock:
             for attr, value in patch_data.items():
                 if value is not None:
@@ -60,7 +47,7 @@ class StockRepository:
             await self.db.refresh(stock)
 
         return stock
-    
+
     async def delete_stock(self, stock_id: int) -> Optional[Stock]:
         query = select(Stock).where(Stock.id == stock_id)
         execute = await self.db.execute(query)
@@ -71,14 +58,12 @@ class StockRepository:
             await self.db.commit()
 
         return stock
-    
 
     async def get_stock(self, stock_id: int) -> Optional[Stock]:
         query = select(Stock).where(Stock.id == stock_id)
         execute = await self.db.execute(query)
         stock = execute.scalars().one_or_none()
         return stock
-    
 
     async def get_stocks(self, filters: dict = None) -> List[Stock]:
         query = select(Stock)
@@ -89,68 +74,15 @@ class StockRepository:
         stocks = await self.db.execute(query).all()
         return stocks
     
+    async def get_stocks_by_titles(self, titles: List[str]) -> List[Stock]:
+        query = select(Stock).where(Stock.title.in_(titles))
+        result = await self.db.execute(query)
+        stonks = result.scalars().all()
+        return stonks
+
+
 def get_stock_repository(db: AsyncSession = Depends(get_async_session)) -> StockRepository:
     return StockRepository(db)
-
-
-
-# @router.post("/test", response_model=StockBase)
-# async def test(db: AsyncSession = Depends(get_async_session)):
-#     return {"status" : "success"}
-
-# @router.put("/update/{stock_id}", response_model=StockBase)
-# async def update_stock(
-#     stock_id: int,
-#     updated_stock: StockBase,
-#     repo: StockRepository = Depends(get_stock_repository)
-# ):
-#     updated_stock_data = await repo.update_stock(stock_id, updated_stock)
-#     if updated_stock_data is None:
-#         raise HTTPException(status_code=404, detail="Stock not found")
-#     return updated_stock_data
-
-
-# @router.patch("/patch/{stock_id}", response_model=StockBase)
-# async def patch_stock(
-#     stock_id: int,
-#     patch_data: dict,
-#     repo: StockRepository = Depends(get_stock_repository)
-# ):
-#     updated_stock_data = await repo.patch_stock(stock_id, patch_data)
-#     if updated_stock_data is None:
-#         raise HTTPException(status_code=404, detail="Stock not found")
-#     return updated_stock_data
-
-
-# @router.delete("/delete/{stock_id}", response_model=StockBase)
-# async def delete_stock(
-#     stock_id: int,
-#     repo: StockRepository = Depends(get_stock_repository)
-# ):
-#     deleted_stock_data = await repo.delete_stock(stock_id)
-#     if deleted_stock_data is None:
-#         raise HTTPException(status_code=404, detail="Stock not found")
-#     return deleted_stock_data
-
-# @router.get("/get/{stock_id}", response_model=StockBase)
-# async def get_stock(
-#     stock_id: int,
-#     repo: StockRepository = Depends(get_stock_repository)
-# ):
-#     stock = await repo.get_stock(stock_id)
-#     if stock is None:
-#         raise HTTPException(status_code=404, detail="Stock not found")
-#     return stock
-
-# @router.get("/get_all/", response_model=List[StockBase])
-# async def get_stocks(
-#     filters: dict = None,
-#     repo: StockRepository = Depends(get_stock_repository)
-# ):
-#     stocks = await repo.get_stocks(filters)
-#     return stocks
-
-
 
 
 router = APIRouter()
@@ -166,7 +98,6 @@ async def execute(
     # service = Mediator()
     # extracted_news = await service()
     return {"status": "success"}
-
 
 
 @router.post("/create/", response_model=Stock)
@@ -185,6 +116,7 @@ async def get_stock(
         raise HTTPException(status_code=404, detail="Stock not found")
     return stock
 
+
 @router.get("/get_all/", response_model=List[StockBase])
 async def get_stocks(
     filters: dict = None,
@@ -192,6 +124,7 @@ async def get_stocks(
 ):
     stocks = await repository.get_stocks(filters)
     return stocks
+
 
 @router.put("/update/{stock_id}", response_model=StockBase)
 async def update_stock(
