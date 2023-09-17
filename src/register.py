@@ -16,7 +16,7 @@ class News(NewsBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     stock_id: Optional[int] = Field(default=None, foreign_key="stocks.id")
     stock: Optional["Stock"] = Relationship(
-        back_populates="news")
+        back_populates="news", sa_relationship_kwargs={"lazy": "selectin"})
     
     publications: List["NewsToPublication"] = Relationship(back_populates="news")
 
@@ -33,7 +33,7 @@ class Stock(StockBase, table=True):
     __tablename__ = "stocks"
     __table_args__ = {'extend_existing': True}
     id: Optional[int] = Field(default=None, primary_key=True)
-    news: Optional[List["News"]] = Relationship(back_populates="stock")
+    news: Optional[List["News"]] = Relationship(back_populates="stock",  sa_relationship_kwargs={"lazy": "selectin"})
 
     profiles: List["StockToProfile"] = Relationship(back_populates="stock", sa_relationship_kwargs={"lazy": "selectin"})
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)

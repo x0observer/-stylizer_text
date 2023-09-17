@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, Field, DateTime
 from typing import Optional
 from datetime import datetime
-
+from src.utils.templates import *
 class NewsBase(SQLModel):
     link_href: Optional[str]
     date_text: Optional[str]
@@ -12,6 +12,7 @@ class NewsBase(SQLModel):
     is_fresh: Optional[bool] = Field(True)
     publication_in: Optional[datetime]
 
-
+class NewsReadable(Readable, NewsBase):
+    pass
 
     

@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, DateTime
 from typing import Optional
 from datetime import datetime
 from src.utils.templates import *
-
+from src.news.contexts.news import NewsReadable
 class StockBase(SQLModel):
     title: Optional[str]
     symbol: Optional[str]
@@ -11,3 +11,6 @@ class StockBase(SQLModel):
 
 class StockReadable(Readable, StockBase):
     pass
+
+class StockFull(StockReadable):
+    news: Optional[List["NewsReadable"]]

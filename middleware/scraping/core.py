@@ -98,10 +98,12 @@ class Mediator:
                 HTML_TAGS_PATTERN = '<[^<]+?>'
                 EMPTY_PLACEHOLDER = ""
 
+                
+
                 cleared_content = re.sub(
                     HTML_TAGS_PATTERN, EMPTY_PLACEHOLDER, str(targeted_div_content))
 
-                extracted_news.append(News(**NewsBase(link_href=link_href, date_text=date_text,
+                extracted_news.append(News(**NewsBase(sign=sign(cleared_content), link_href=link_href, date_text=date_text,
                                                       title_text=title_text, summary_text=summary_text, publication_in=date_trim(), content_text=cleared_content).dict(), stock_id=self.stock.id))
             except AttributeError or ValueError:
                 continue

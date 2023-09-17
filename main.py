@@ -1,10 +1,12 @@
 
-from fastapi import Request, Response, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from engine import engine, init_db
 from sqlmodel import SQLModel
 
 from middleware.scraping.service import router as scraping_router
+from middleware.intelegens.service import router as intelegens_router
+
 from src.stock.service import router as stock_router
 from src.profile.service import router as profile_router
 app = FastAPI(debug=True)
@@ -17,7 +19,7 @@ async def on_startup():
 app.include_router(scraping_router, prefix="/middleware")
 app.include_router(stock_router, prefix="/stock")
 app.include_router(profile_router, prefix="/profile")
-
+app.include_router(intelegens_router, prefix="/intelegense")
 
 origins = ["*"]
 

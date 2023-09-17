@@ -59,7 +59,7 @@ class StockRepository:
 
         return stock
 
-    async def get_stock(self, stock_id: int) -> Optional[Stock]:
+    async def get_stock(self, stock_id: int) -> Optional[StockFull]:
         query = select(Stock).where(Stock.id == stock_id)
         execute = await self.db.execute(query)
         stock = execute.scalars().one_or_none()
@@ -106,7 +106,7 @@ async def create_stock(stock: StockBase, repository: StockRepository = Depends(g
     return created_stock
 
 
-@router.get("/get/{stock_id}", response_model=Stock)
+@router.get("/get/{stock_id}", response_model=StockFull)
 async def get_stock(
     stock_id: int,
     repository: StockRepository = Depends(get_stock_repository)
