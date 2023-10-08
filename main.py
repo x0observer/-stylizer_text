@@ -9,13 +9,15 @@ from middleware.intelegens.service import router as intelegens_router
 
 from src.stock.service import router as stock_router
 from src.profile.service import router as profile_router
+from src.auth.v2.router import router as register_router
+
 app = FastAPI(debug=True)
 
 @app.on_event("startup")
 async def on_startup():
     await init_db()
 
-
+app.include_router(register_router, prefix="/register")
 app.include_router(scraping_router, prefix="/middleware")
 app.include_router(stock_router, prefix="/stock")
 app.include_router(profile_router, prefix="/profile")

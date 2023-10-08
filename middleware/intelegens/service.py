@@ -17,21 +17,21 @@ router = APIRouter()
 
 @router.post("/execute/{project_id}")
 async def execute(
-    project_id: int,
+    stock_id: int,
     datetime: datetime,
-    limit: int,
     prompt: str = "\n\nTranslate the above financial news into a simple JSON format: ",
     db: AsyncSession = Depends(get_async_session),
 ):
     
-    query = select(News).join(Stock, News.stock_id == Stock.id).join(StockToProfile, Stock.id == StockToProfile.stock_id).where(StockToProfile.profile_id == project_id).where(News.publication_in > datetime)
+    query = select(News).join(Stock, News.stock_id == stock_id).where(News.publication_in > datetime)
     execute = await db.execute(query)
     news = execute.scalars().all()
     
-    print("news:", news)
+    #print("news:", news)
     print("__news__")
-    random.shuffle(news)
-    selected_news = [news.content_text for news in news][:-limit]
-    
-    incoming_content = prompt + ' '.join(selected_news)[:1024]
-    return {"status": "success", "data" : OpenAIService.generate_response_by_prompt(prompt=incoming_content, openai_key="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")}
+    #random.shuffle(news)
+    selected_news = [news.content_text for news in news]
+    print("selected_news:", selected_news)
+    incoming_content = prompt + ' '.join(selected_news)[:(1024+512)-len(prompt)]
+    print("selected_news:", incoming_content)
+    return {"status": "success", "data" : OpenAIService.generate_response_by_prompt(prompt=incoming_content, openai_key="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")}

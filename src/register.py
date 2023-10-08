@@ -5,10 +5,17 @@ from src.stock.contexts.stock import *
 from src.project.contexts.project import *
 from src.publication.contexts.publication import *
 
+from src.auth.contexts.user import UserBase
 from sqlmodel import SQLModel, Field, Relationship, Field
 from typing import List, Optional
 from datetime import datetime
 
+
+class User(UserBase, table=True):
+    __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
 class News(NewsBase, table=True):
     __tablename__ = "news"

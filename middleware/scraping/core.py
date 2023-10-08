@@ -65,7 +65,7 @@ class Mediator:
                     subject = "feed-item-big"
                     link_element = await element.query_selector('a.%s__head' % subject)
 
-                link_href = source_url + await link_element.get_attribute('href')
+                link_href = await link_element.get_attribute('href')
 
                 date_text = await (await element.query_selector('.%s__date' % subject)).inner_text()
 
