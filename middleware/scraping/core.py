@@ -23,12 +23,15 @@ class Mediator:
     BASE_TIMESPAN = 1
     LOGOUT_TIMESPAN = 4
 
-    def __init__(self, stock: SQLModel = None):
+    def __init__(self, stock_symbol: str = None, stock_id: int = None, activate_at: datetime = None):
         # TODO: SETTING APPLY
-        self.stock = stock
+        self.stock_symbol = stock_symbol
+        self.stock_id = stock_id
+        self.activate_at = activate_at
 
     async def run(self, playwright, base_timespan=BASE_TIMESPAN, logout_timespan=LOGOUT_TIMESPAN, source_url: str = "https://bcs-express.ru", subquery_span="/category", query_span: str = "/category?tag=/{/}", trim="/{/}", extracted_news: News = []):
-        query_symbol = self.stock.symbol
+        
+        query_symbol = self.stock_symbol
 
         print("__chromium_launch__")
         chromium = playwright.firefox
@@ -76,44 +79,60 @@ class Mediator:
                 except ValueError:
                     break
 
+                print("{%s}//{%s} " % (date_trim(), self.activate_at))
+                   
+                if date_trim() <= self.activate_at:
+                    print("The limit of the last news collector activation has been reached: %s//%s " % (date_trim(), self.activate_at))
+                    break
+
+
                 title_text = await (await element.query_selector('.%s__title' % subject)).inner_text()
                 summary_text = await (await element.query_selector('.%s__summary' % subject)).inner_text()
 
                 child_page = await browser.new_page()
                 print("link_href:", link_href)
                 await asyncio.sleep(randint(base_timespan, logout_timespan))
-                await child_page.goto(link_href)
-                print("__child_page_goto__")
-                # await asyncio.sleep(randint(base_timespan, logout_timespan))  # Use asyncio.sleep for asynchronous sleeping
 
-                await child_page.wait_for_selector('div[data-id="publication-content"]')
+                try: 
+                    await child_page.goto(link_href)
+                    print("__child_page_goto__")
+                    # await asyncio.sleep(randint(base_timespan, logout_timespan))  # Use asyncio.sleep for asynchronous sleeping
 
-                targeted_div_content = await child_page.inner_html('div[data-id="publication-content"]')
+                    await child_page.wait_for_selector('div[data-id="publication-content"]')
 
-                await child_page.close()
+                    targeted_div_content = await child_page.inner_html('div[data-id="publication-content"]')
 
-                print(targeted_div_content)
-                print("-----")
+                    await child_page.close()
 
-                HTML_TAGS_PATTERN = '<[^<]+?>'
-                EMPTY_PLACEHOLDER = ""
+                    # print(targeted_div_content)
+                    print("-----")
 
-                
+                    HTML_TAGS_PATTERN = '<[^<]+?>'
+                    EMPTY_PLACEHOLDER = ""
 
-                cleared_content = re.sub(
-                    HTML_TAGS_PATTERN, EMPTY_PLACEHOLDER, str(targeted_div_content))
+                    cleared_content = re.sub(
+                        HTML_TAGS_PATTERN, EMPTY_PLACEHOLDER, str(targeted_div_content))
+                    extracted_news.append(News(**NewsBase(sign=sign(cleared_content), link_href=link_href, date_text=date_text,
+                                                      title_text=title_text, summary_text=summary_text, publication_in=date_trim(), content_text=cleared_content).dict(), stock_id=self.stock_id))
+                except:
+                    print("unprocessable page: s%" % (link_href))
+                finally:
+                    continue
 
-                extracted_news.append(News(**NewsBase(sign=sign(cleared_content), link_href=link_href, date_text=date_text,
-                                                      title_text=title_text, summary_text=summary_text, publication_in=date_trim(), content_text=cleared_content).dict(), stock_id=self.stock.id))
+
+
+
             except AttributeError or ValueError:
                 continue
 
         await browser.close()  # Use await here
+        print("__extracted_news__")
         extracted_news = sorted(
             extracted_news, key=sorting_by_publication_date)
+        print(extracted_news)
         return extracted_news
 
     async def __call__(self, ):
         print("__call__")
         async with async_playwright() as playwright:
-            return await self.run(playwright)
+            return await self.run(playwright=playwright, extracted_news=[])

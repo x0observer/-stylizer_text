@@ -5,6 +5,8 @@ from sqlmodel import Session
 from engine import *
 from typing import List
 from sqlalchemy.exc import IntegrityError
+import pytz
+
 import hashlib
 
 
@@ -12,6 +14,14 @@ class Readable(SQLModel):
     id: Optional[int]
     created_at: Optional[datetime]
 
+
+
+
+moscow_tz = pytz.timezone('Europe/Moscow')
+
+desired_datetime = datetime(2023, 6, 1, 0, 0, 0)
+
+desired_datetime_moscow = moscow_tz.localize(desired_datetime)
 
 class DateTrim:
     MONTH_PLACEHOLDERS = [
@@ -60,19 +70,16 @@ def sign(string_to_hash, length=16):
 
 
 async def insert_unique_objects(db: AsyncSession, objects: List[SQLModel]):
+    unique_objects = []
     for obj in objects:
         try:
             db.add(obj)
             await db.flush()
+            unique_objects.append(obj)
         except IntegrityError:
-                # Handle the unique constraint violation (skip the duplicate)
-            db.rollback()
-            continue
-        await db.commit()
+            await db.rollback()
+        else:
+            await db.commit()
+    return unique_objects
 
 
-test_cases = ["23 августа в 20:29", "19 июля в 13:59"]
-
-for test_case in test_cases:
-    date_trim = DateTrim(test_case)
-    print(date_trim())

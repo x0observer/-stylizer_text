@@ -10,6 +10,8 @@ from src.profile.service import ProfileRepository
 
 router = APIRouter()
 
+import asyncio
+
 
 @router.post("/scraping/{profile_id}")
 async def execute(
@@ -17,18 +19,31 @@ async def execute(
     db: AsyncSession = Depends(get_async_session),
 ):
     profile_repository = ProfileRepository(db=db)
-    profile = await profile_repository.get_profile(profile_id)
+    stocks = await profile_repository.get_profile_stocks(profile_id)
+    print("__profile_stocks__")
+    print(stocks)
 
+    for stock in stocks:
+        print("__stock_iter__")
+        print("__stock_obj__", stock)
+        service = Mediator(stock.symbol, stock.id, stock.activate_at)
+        
+        try:
+            extracted_news = await service()
+            unique_news = await insert_unique_objects(db=db, objects=extracted_news)
 
-    for profile_stock in profile.stocks:
-        service = Mediator(stock=profile_stock.stock)
-        extracted_news = await service()
-        await insert_unique_objects(db=db, objects=extracted_news)
+            stock.activate_at = datetime.now()
+            await db.commit()
+            await db.refresh(stock)
 
+        except IntegrityError as e:
+            await db.rollback()  # Rollback the transaction if there's an IntegrityError
+            print(f"IntegrityError for stock {stock.id}: {str(e)}")
+        except Exception as e:
+            await db.rollback()  # Rollback for other exceptions
+            print(f"Error for stock {stock.id}: {str(e)}")
 
-
-    return {"status": "success", "data": extracted_news}
-
+    return {"status": "success", "extracted_news": extracted_news, "unique_news": unique_news}
 
 @router.post("/scraping/test")
 async def test(

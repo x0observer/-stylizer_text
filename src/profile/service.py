@@ -65,6 +65,14 @@ class ProfileRepository:
         execute = await self.db.execute(query)
         profile = execute.scalars().one_or_none()
         return profile
+    
+    async def get_profile_stocks(self, profile_id: int) -> Optional[StockBase]:
+        query = select(Stock).join(StockToProfile).where(StockToProfile.profile_id == profile_id)
+        execute = await self.db.execute(query)
+        stocks = execute.scalars().all()
+        print("__profile_stocks__")
+        print(stocks)
+        return stocks
 
     async def get_profiles(self, filters: dict = None) -> List[Profile]:
         query = select(Profile)

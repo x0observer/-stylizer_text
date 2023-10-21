@@ -11,7 +11,7 @@ class StockRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_stock(self, stock: StockBase) -> Stock:
+    async def create_stock(self, stock: StockCreate) -> Stock:
         print("__new_stock__")
         new_stock = Stock(**stock.dict())
         self.db.add(new_stock)
@@ -101,7 +101,7 @@ async def execute(
 
 
 @router.post("/create/", response_model=Stock)
-async def create_stock(stock: StockBase, repository: StockRepository = Depends(get_stock_repository)):
+async def create_stock(stock: StockCreate, repository: StockRepository = Depends(get_stock_repository)):
     created_stock = await repository.create_stock(stock)
     return created_stock
 
