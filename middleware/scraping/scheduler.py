@@ -59,7 +59,7 @@ async def scraping_scheduler():
 
 
 # Schedule the background task to run every 1 minute
-scheduler.add_job(scraping_scheduler, "interval", minutes=10)
+scheduler.add_job(scraping_scheduler, "interval", minutes=360)
 
 
 @router.post("/scraping_scheduler_task/")
