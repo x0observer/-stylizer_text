@@ -1,7 +1,6 @@
 # # engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
 
-
 # # async def get_session() -> AsyncSession:
 # #     async_session = sessionmaker(
 # #         engine, class_=AsyncSession, expire_on_commit=False
@@ -33,7 +32,6 @@ from setup import settings
 #         await connection.run_sync(SQLModel.metadata.create_all)
 
 
-
 # async def get_async_session() -> AsyncSession:
 #     async with async_session() as session:
 #         yield session
@@ -45,12 +43,22 @@ from sqlalchemy.orm import sessionmaker
 
 POSTGRESQL_ASYNC_DATABASE_URL = settings["db"]["uri"]
 
-engine = AsyncEngine(create_engine(POSTGRESQL_ASYNC_DATABASE_URL, echo=True, future=True))
+engine = AsyncEngine(create_engine(
+    POSTGRESQL_ASYNC_DATABASE_URL, echo=True, future=True))
+
+AsyncSessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
 
 async def init_db():
     async with engine.begin() as connection:
-        # await connection.run_sync(SQLModel.metadata.drop_all)
+        await connection.run_sync(SQLModel.metadata.drop_all)
         await connection.run_sync(SQLModel.metadata.create_all)
+
 
 async def get_async_session() -> AsyncSession:
     async with AsyncSession(engine, expire_on_commit=False) as session:

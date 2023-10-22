@@ -74,16 +74,17 @@ class ProfileRepository:
         print(stocks)
         return stocks
 
-    async def get_profiles(self, filters: dict = None) -> List[Profile]:
+    async def get_profiles(self, filters: dict = None) -> List[ProfileReadable]:
         query = select(Profile)
         if filters:
             query = query.where(
                 *(getattr(Profile, attr) == value for attr, value in filters.items())
             )
-        profile = await self.db.execute(query).all()
-        return profile
+        execute = await self.db.execute(query)    
+        profiles = execute.scalars().all()
+        return profiles
 
-    async def add_stonks_to_profile(self, profile_id: int, stonks: List[Stock]) -> List[Profile]:
+    async def add_stonks_to_profile(self, profile_id: int, stonks: List[Stock]) -> ProfileReadable:
         query = select(Profile).where(Profile.id == profile_id)
         execute = await self.db.execute(query)
         profile = execute.scalars().one_or_none()
@@ -120,7 +121,7 @@ async def create_profile(profile: ProfileBase, repository: ProfileRepository = D
     return created_profile
 
 
-@router.post("/{profile_id}/add_stocks/", response_model=ProfileFull)
+@router.post("/{profile_id}/add_stocks/", response_model=ProfileReadable)
 async def add_stocks_to_profile(
     profile_id: int,
     titles: List[str],  # List of Stock objects from the request body
@@ -150,12 +151,12 @@ async def get_profile(
     return profile
 
 
-@router.get("/get_all/", response_model=List[Profile])
+@router.post("/get_all/", response_model=List[ProfileReadable])
 async def get_stocks(
     filters: dict = None,
     repository: ProfileRepository = Depends(get_profile_repository)
 ):
-    profiles = await repository.get_profile(filters)
+    profiles = await repository.get_profiles(filters)
     return profiles
 
 

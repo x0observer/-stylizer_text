@@ -10,13 +10,27 @@ from middleware.intelegens.service import router as intelegens_router
 from src.stock.service import router as stock_router
 from src.profile.service import router as profile_router
 from src.auth.v2.router import router as register_router
+from middleware.scraping.scheduler import router as scheduler_router
+
+from middleware.scraping.scheduler import scheduler
 
 app = FastAPI(debug=True)
 
+
 @app.on_event("startup")
-async def on_startup():
+async def startup():
     await init_db()
 
+    # Start the scheduler when the FastAPI app is started
+    scheduler.start()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    # Stop the scheduler when the FastAPI app is stopped
+    scheduler.shutdown()
+
+app.include_router(scheduler_router, prefix="/scheduler")
 app.include_router(register_router, prefix="/register")
 app.include_router(scraping_router, prefix="/middleware")
 app.include_router(stock_router, prefix="/stock")
@@ -52,5 +66,6 @@ app.add_middleware(
 
 if __name__ == "__main__":
     import uvicorn
-    
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, timeout_keep_alive=600)
+
+    uvicorn.run(app, host="0.0.0.0", port=8000,
+                reload=False, timeout_keep_alive=600)

@@ -65,13 +65,14 @@ class StockRepository:
         stock = execute.scalars().one_or_none()
         return stock
 
-    async def get_stocks(self, filters: dict = None) -> List[Stock]:
+    async def get_stocks(self, filters: dict = None) -> List[StockReadable]:
         query = select(Stock)
         if filters:
             query = query.where(
                 *(getattr(Stock, attr) == value for attr, value in filters.items())
             )
-        stocks = await self.db.execute(query).all()
+        execute = await self.db.execute(query)
+        stocks = execute.scalars().all()
         return stocks
     
     async def get_stocks_by_titles(self, titles: List[str]) -> List[Stock]:
@@ -117,7 +118,7 @@ async def get_stock(
     return stock
 
 
-@router.get("/get_all/", response_model=List[StockBase])
+@router.post("/get_all/", response_model=List[StockReadable])
 async def get_stocks(
     filters: dict = None,
     repository: StockRepository = Depends(get_stock_repository)

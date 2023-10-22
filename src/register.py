@@ -4,6 +4,7 @@ from src.profile.contexts.profile import *
 from src.stock.contexts.stock import *
 from src.project.contexts.project import *
 from src.publication.contexts.publication import *
+from middleware.scraping.contexts.metalogger import *
 
 from src.auth.contexts.user import UserBase
 from sqlmodel import SQLModel, Field, Relationship, Field
@@ -102,4 +103,11 @@ class NewsToPublication(SQLModel, table=True):
     publication: "Publication" = Relationship(back_populates="news_list")
 
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+class MetaLogger(MetaLoggerBase, table=True):
+    __tablename__ = "metaloggers"
+    __table_args__ = {'extend_existing': True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
 
