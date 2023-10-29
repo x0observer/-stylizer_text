@@ -8,6 +8,8 @@ from middleware.scraping.service import router as scraping_router
 from middleware.intelegens.service import router as intelegens_router
 
 from src.stock.service import router as stock_router
+from src.payment.router import router as payment_router
+from src.client.router import router as client_router
 from src.profile.service import router as profile_router
 from src.auth.v2.router import router as register_router
 from middleware.scraping.scheduler import router as scheduler_router
@@ -31,6 +33,8 @@ async def shutdown():
     scheduler.shutdown()
 
 app.include_router(scheduler_router, prefix="/scheduler")
+app.include_router(payment_router, prefix="/payment")
+app.include_router(client_router, prefix="/client")
 app.include_router(register_router, prefix="/register")
 app.include_router(scraping_router, prefix="/middleware")
 app.include_router(stock_router, prefix="/stock")

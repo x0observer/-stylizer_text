@@ -72,13 +72,14 @@ class AuthRepository:
         user = execute.scalars().one_or_none()
         return user
 
-    async def get_active_user(self, ):
+    async def get_active_user(self):
         jwt_subject = self.auth.get_jwt_subject()
+        print("__jwt_subject__", jwt_subject)
         db_user = await self.get_user_by_email(jwt_subject)
         if not db_user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail="User not authorized")
         return db_user
 
 
-def get_auth_repository(db: AsyncSession = Depends(get_async_session), auth: AuthJWT = Depends()) -> AuthRepository:
+async def get_auth_repository(db: AsyncSession = Depends(get_async_session), auth: AuthJWT = Depends()) -> AuthRepository:
     return AuthRepository(db, auth)

@@ -56,7 +56,7 @@ AsyncSessionLocal = sessionmaker(
 
 async def init_db():
     async with engine.begin() as connection:
-        await connection.run_sync(SQLModel.metadata.drop_all)
+        # await connection.run_sync(SQLModel.metadata.drop_all)
         await connection.run_sync(SQLModel.metadata.create_all)
 
 

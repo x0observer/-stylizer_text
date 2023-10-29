@@ -5,6 +5,8 @@ from sqlmodel import Session
 from engine import *
 from typing import List
 from sqlalchemy.exc import IntegrityError
+from enum import Enum
+from fastapi import HTTPException, Security, Depends, APIRouter
 import pytz
 
 import hashlib
@@ -15,6 +17,9 @@ class Readable(SQLModel):
     created_at: Optional[datetime]
 
 
+class Paginatable(SQLModel):
+    page: Optional[int] = 1
+    items_per_page: Optional[int] = 10
 
 
 moscow_tz = pytz.timezone('Europe/Moscow')
@@ -22,6 +27,7 @@ moscow_tz = pytz.timezone('Europe/Moscow')
 desired_datetime = datetime(2023, 6, 1, 0, 0, 0)
 
 desired_datetime_moscow = moscow_tz.localize(desired_datetime)
+
 
 class DateTrim:
     MONTH_PLACEHOLDERS = [
@@ -81,5 +87,3 @@ async def insert_unique_objects(db: AsyncSession, objects: List[SQLModel]):
         else:
             await db.commit()
     return unique_objects
-
-

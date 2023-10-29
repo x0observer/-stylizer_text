@@ -1,16 +1,17 @@
-
 from src.news.contexts.news import *
 from src.profile.contexts.profile import *
 from src.stock.contexts.stock import *
 from src.project.contexts.project import *
 from src.publication.contexts.publication import *
 from middleware.scraping.contexts.metalogger import *
+from src.client.contexts.client import *
+from src.payment.contexts.payment import *
+
 
 from src.auth.contexts.user import UserBase
 from sqlmodel import SQLModel, Field, Relationship, Field
 from typing import List, Optional
 from datetime import datetime
-
 
 class User(UserBase, table=True):
     __tablename__ = "users"
@@ -111,3 +112,22 @@ class MetaLogger(MetaLoggerBase, table=True):
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
 
+class Client(ClientBase, table=True):
+    __tablename__ = "clients"
+    __table_args__ = {'extend_existing': True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    payments: Optional[List["Payment"]] = Relationship(back_populates="client",  sa_relationship_kwargs={"lazy": "selectin"})
+
+
+
+class Payment(PaymentBase, table=True):
+    __tablename__ = "payments"
+    __table_args__ = {'extend_existing': True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+
+    client_id: Optional[int] = Field(default=None, foreign_key="clients.id")
+    client: Optional["Client"] = Relationship(
+        back_populates="payments", sa_relationship_kwargs={"lazy": "selectin"})
