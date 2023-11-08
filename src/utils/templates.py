@@ -7,6 +7,8 @@ from typing import List
 from sqlalchemy.exc import IntegrityError
 from enum import Enum
 from fastapi import HTTPException, Security, Depends, APIRouter
+
+import re
 import pytz
 
 import hashlib
@@ -24,7 +26,7 @@ class Paginatable(SQLModel):
 
 moscow_tz = pytz.timezone('Europe/Moscow')
 
-desired_datetime = datetime(2023, 6, 1, 0, 0, 0)
+desired_datetime = datetime(2023, 10, 1, 0, 0, 0)
 
 desired_datetime_moscow = moscow_tz.localize(desired_datetime)
 

@@ -14,23 +14,27 @@ from src.profile.service import router as profile_router
 from src.auth.v2.router import router as register_router
 from middleware.scraping.scheduler import router as scheduler_router
 
-from middleware.scraping.scheduler import scheduler
+# from middleware.scraping.scheduler import scheduler
+from middleware.v2.scheduler import SchedulerRepository
 
 app = FastAPI(debug=True)
+scheduler = SchedulerRepository()
 
 
 @app.on_event("startup")
 async def startup():
     await init_db()
-
-    # Start the scheduler when the FastAPI app is started
+    
+    scheduler.add_job(scheduler.scraping_scheduler, 'interval', minutes=3)
     scheduler.start()
+
 
 
 @app.on_event("shutdown")
 async def shutdown():
     # Stop the scheduler when the FastAPI app is stopped
-    scheduler.shutdown()
+    # scheduler.shutdown()
+    return 1
 
 app.include_router(scheduler_router, prefix="/scheduler")
 app.include_router(payment_router, prefix="/payment")

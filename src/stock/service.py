@@ -65,7 +65,7 @@ class StockRepository:
         stock = execute.scalars().one_or_none()
         return stock
 
-    async def get_stocks(self, filters: dict = None) -> List[StockReadable]:
+    async def get_stocks(self, filters: dict = None) -> List[Stock]:
         query = select(Stock)
         if filters:
             query = query.where(
@@ -118,7 +118,7 @@ async def get_stock(
     return stock
 
 
-@router.post("/get_all/", response_model=List[StockReadable])
+@router.post("/get_all/", response_model=List[Stock])
 async def get_stocks(
     filters: dict = None,
     repository: StockRepository = Depends(get_stock_repository)
