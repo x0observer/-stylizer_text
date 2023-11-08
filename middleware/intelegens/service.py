@@ -26,7 +26,8 @@ async def execute(
     query = select(News).join(Stock, News.stock_id == stock_id).where(News.publication_in > datetime)
     execute = await db.execute(query)
     news = execute.scalars().all()
-    
+    if not news:
+        return {"status": "failed", "data" : []}
     #print("news:", news)
     print("__news__")
     #random.shuffle(news)

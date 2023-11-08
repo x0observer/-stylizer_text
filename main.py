@@ -12,10 +12,11 @@ from src.payment.router import router as payment_router
 from src.client.router import router as client_router
 from src.profile.service import router as profile_router
 from src.auth.v2.router import router as register_router
-from middleware.scraping.scheduler import router as scheduler_router
+from middleware.v2.scheduler import router as scheduler_router
 
 # from middleware.scraping.scheduler import scheduler
 from middleware.v2.scheduler import SchedulerRepository
+
 
 app = FastAPI(debug=True)
 scheduler = SchedulerRepository()

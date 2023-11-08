@@ -59,7 +59,7 @@ class StockRepository:
 
         return stock
 
-    async def get_stock(self, stock_id: int) -> Optional[StockFull]:
+    async def get_stock(self, stock_id: int):
         query = select(Stock).where(Stock.id == stock_id)
         execute = await self.db.execute(query)
         stock = execute.scalars().one_or_none()
