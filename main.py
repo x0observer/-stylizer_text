@@ -12,6 +12,7 @@ from src.payment.router import router as payment_router
 from src.client.router import router as client_router
 from src.profile.service import router as profile_router
 from src.auth.v2.router import router as register_router
+from src.referral.router import router as referral_router
 from middleware.v2.scheduler import router as scheduler_router
 
 # from middleware.scraping.scheduler import scheduler
@@ -37,6 +38,7 @@ async def shutdown():
     # scheduler.shutdown()
     return 1
 
+app.include_router(referral_router, prefix="/referral")
 app.include_router(scheduler_router, prefix="/scheduler")
 app.include_router(payment_router, prefix="/payment")
 app.include_router(client_router, prefix="/client")

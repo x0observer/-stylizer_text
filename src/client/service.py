@@ -61,7 +61,7 @@ class ClientRepository:
 
         return client
 
-    async def get_client(self, client_id: int) -> Optional[ClientReadable]:
+    async def get_client(self, client_id: int):
         query = select(Client).where(Client.id == client_id)
         execute = await self.db.execute(query)
         client = execute.scalars().one_or_none()

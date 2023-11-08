@@ -9,7 +9,7 @@ class ReferralSubscriptionBase(SQLModel):
 
 
 class ReferralSubscriptionCreate(ReferralSubscriptionBase):
-    pass
+    owner_id: Optional[int] = None
 
 class ReferralSubscriptionQueryable(ReferralSubscriptionBase):
     pass
@@ -17,5 +17,5 @@ class ReferralSubscriptionQueryable(ReferralSubscriptionBase):
 class ReferralSubscriptionUpdate(ReferralSubscriptionBase):
     pass
 
-class ReferralSubscriptionReadable(Readable, ReferralSubscriptionBase):
+class ReferralSubscriptionReadable(Readable, ReferralSubscriptionCreate):
     pass

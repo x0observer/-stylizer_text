@@ -130,10 +130,10 @@ class Client(ClientBase, table=True):
 
   # Relationships
     payments: List["Payment"] = Relationship(back_populates="client", sa_relationship_kwargs={"lazy": "selectin"})
-    own_referral_subscription: Optional["ReferralSubscription"] = Relationship(back_populates="owner")
-    referrals: List["Referral"] = Relationship(back_populates="referrer")  # Clients that this client referred
+    own_referral_subscription: "ReferralSubscription" = Relationship(back_populates="owner", sa_relationship_kwargs={"lazy": "selectin"} )
+    referrals: List["Referral"] = Relationship(back_populates="referrer", sa_relationship_kwargs={"lazy": "selectin"})  # Clients that this client referred
 
-class ReferralSubscription(SQLModel, table=True):
+class ReferralSubscription(ReferralSubscriptionBase, table=True):
     __tablename__ = "referralsubscriptions"
     __table_args__ = {'extend_existing': True}
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -141,8 +141,8 @@ class ReferralSubscription(SQLModel, table=True):
 
     # Relationships
     owner_id: int = Field(default=None, foreign_key="clients.id")
-    owner: Optional[Client] = Relationship(back_populates="own_referral_subscription")
-    referrals: List["Referral"] = Relationship(back_populates="subscription")  # Referrals under this subscription
+    owner: "Client" = Relationship(back_populates="own_referral_subscription", sa_relationship_kwargs={"lazy": "selectin"})
+    referrals: List["Referral"] = Relationship(back_populates="subscription", sa_relationship_kwargs={"lazy": "selectin"})  # Referrals under this subscription
 
 class Referral(SQLModel, table=True):
     __tablename__ = "referrals"

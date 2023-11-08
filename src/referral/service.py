@@ -5,6 +5,10 @@ from src.auth.v2.auth import AuthRepository, get_auth_repository
 from engine import get_async_session
 from typing import Optional, List
 from src.register import *
+from src.utils.templates import *
+from src.auth.v2.auth import api_key_header
+
+
 import uuid
 
 class ReferralSubscriptionRepository:
@@ -68,23 +72,26 @@ class ReferralSubscriptionRepository:
         referral_subscriptions = execute.scalars().all()
         return referral_subscriptions
 
-async def generate_referral_subscription(self, user_id: int) -> Optional[ReferralSubscriptionReadable]:
-        # Генерация уникального идентификатора для реферальной подписки
-        unique_id = uuid.uuid4()
+    async def generate_referral_subscription(self, client_id: int) -> Optional[ReferralSubscriptionReadable]:
+            # Генерация уникального идентификатора для реферальной подписки
+            unique_id = uuid.uuid4()
+            print("__unique_code__", unique_id)
 
-        # Создание объекта реферальной подписки
-        referral_subscription_data = ReferralSubscriptionCreate(
-            owner_id=user_id,
-            referral_code=str(unique_id),
-            # Другие необходимые поля можно добавить здесь
-        )
+            # Создание объекта реферальной подписки
+            referral_subscription_data = ReferralSubscriptionCreate(
+                owner_id=client_id,
+                code=str(unique_id),
+                # Другие необходимые поля можно добавить здесь
+            )
 
-        # Сохранение реферальной подписки в базе данных
-        new_referral_subscription = await self.create_referral_subscription(referral_subscription_data)
+            # Сохранение реферальной подписки в базе данных
+            new_referral_subscription = await self.create_referral_subscription(referral_subscription_data)
 
-        return new_referral_subscription
+            return new_referral_subscription
 
 
-async def get_referral_subscription_repository(db: AsyncSession = Depends(get_async_session), auth_repository: AuthRepository = Depends(get_auth_repository)) -> ReferralSubscriptionRepository:
+async def get_referral_subscription_repository(db: AsyncSession = Depends(get_async_session), api_key: str = Security(api_key_header), auth_repository: AuthRepository = Depends(get_auth_repository)) -> ReferralSubscriptionRepository:
     await auth_repository.get_active_user()
     return ReferralSubscriptionRepository(db)
+
+

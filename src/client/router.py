@@ -13,15 +13,24 @@ async def create_client(client: ClientBase, repository: ClientRepository = Depen
     return create_client
 
 
-@router.get("/get/{client_id}", response_model=Optional[ClientReadable])
+@router.get("/get/{client_id}", response_model=ClientReadable)
 async def get_client(
     client_id: int,
-    repository: ClientRepository = Depends(get_client_repository)
+    repository: ClientRepository = Depends(get_client_repository),
+    db: AsyncSession = Depends(get_async_session)
 ):
     client = await repository.get_client(client_id)
     if client is None:
         raise HTTPException(status_code=404, detail="Client not found")
-    return client
+    print("__client_readable__", ClientReadable.from_orm(client))
+    
+    query = select(ReferralSubscription).where(ReferralSubscription.owner_id == client_id)
+    execute = await db.execute(query)
+    referral_subscription = execute.scalars().one_or_none()
+    # client.own_referral_subscription = referral_subscription
+    orm_client = ClientReadable.from_orm(client)
+    orm_client.own_referral_subscription = referral_subscription
+    return orm_client
 
 
 

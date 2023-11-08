@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, DateTime
 from typing import Optional
 from datetime import datetime
 from src.utils.templates import *
-
+from src.referral.contexts.referral_subscription import ReferralSubscriptionReadable
 
 class ClientBase(SQLModel):
     first_name: Optional[str]
@@ -17,7 +17,7 @@ class ClientQueryable(ClientBase):
 
 
 class ClientReadable(Readable, ClientBase):
-    pass
+    own_referral_subscription: Optional["ReferralSubscriptionReadable"] 
 
 
 class ClientCreate(ClientBase):
