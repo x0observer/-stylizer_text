@@ -26,7 +26,7 @@ class Paginatable(SQLModel):
 
 moscow_tz = pytz.timezone('Europe/Moscow')
 
-desired_datetime = datetime(2023, 10, 1, 0, 0, 0)
+desired_datetime = datetime(2023, 11, 1, 0, 0, 0)
 
 desired_datetime_moscow = moscow_tz.localize(desired_datetime)
 
@@ -70,11 +70,25 @@ class DateTrim:
         return self.datetime
 
 
-def sign(string_to_hash, length=16):
+def signed(string_to_hash, length=16):
     hash_object = hashlib.sha256(string_to_hash.encode())
     hex_dig = hash_object.hexdigest()
     truncated_hex_dig = hex_dig[:length]
     return truncated_hex_dig
+
+
+# async def insert_unique_objects(db: AsyncSession, objects: List[SQLModel]):
+#     unique_objects = []
+#     for obj in objects:
+#         try:
+#             db.add(obj)
+#             await db.flush()
+#             unique_objects.append(obj)
+#         except IntegrityError:
+#             await db.rollback()
+#         else:
+#             await db.commit()
+#     return unique_objects
 
 
 async def insert_unique_objects(db: AsyncSession, objects: List[SQLModel]):
@@ -82,10 +96,11 @@ async def insert_unique_objects(db: AsyncSession, objects: List[SQLModel]):
     for obj in objects:
         try:
             db.add(obj)
-            await db.flush()
-            unique_objects.append(obj)
-        except IntegrityError:
-            await db.rollback()
-        else:
             await db.commit()
+        except IntegrityError:
+            await db.rollback()  # Rollback the transaction on error
+            continue
+        else:
+            await db.refresh(obj)
+            unique_objects.append(obj)
     return unique_objects

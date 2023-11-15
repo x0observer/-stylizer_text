@@ -61,7 +61,7 @@ def get_scheduler_repository(db: AsyncSession = Depends(get_async_session)) -> S
     return SchedulerRepository(db)
 
 
-router = APIRouter()
+router = APIRouter(tags=["Scheduler(Repository)"])
 
 
 @router.get("/get/{stock_id}")

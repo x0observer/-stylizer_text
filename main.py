@@ -27,7 +27,7 @@ scheduler = SchedulerRepository()
 async def startup():
     await init_db()
     
-    scheduler.add_job(scheduler.scraping_scheduler, 'interval', minutes=3)
+    scheduler.add_job(scheduler.scraping_scheduler, 'interval', minutes=10)
     scheduler.start()
 
 

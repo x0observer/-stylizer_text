@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 from engine import get_async_session
-from middleware.scraping.core import Mediator
 from playwright.async_api import async_playwright
 
 from sqlmodel import select

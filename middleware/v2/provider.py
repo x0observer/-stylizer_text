@@ -3,17 +3,23 @@ from src.utils.templates import *  # Предполагается, что у в�
 from playwright.async_api import async_playwright
 from src.register import *
 from logger import *
+from src.utils.extensions.openai import OpenAIService
+
+
 
 import asyncio
+
 from random import randint
 
 
 class NewsFactory:
     @staticmethod
-    def create_news(sign, link_href, date_text, title_text, summary_text, publication_in, stock_id):
+    def create_news(sign, link_href, date_text, date_original_text, title_text, summary_text, publication_in, stock_id):
         cleared_content = re.sub('<[^<]+?>', "", sign)
         news = News(**NewsBase(
-            sign=cleared_content,
+            sign=signed(cleared_content),
+            date_original_text=date_original_text,
+            processed_news=OpenAIService.summarize_news(news=cleared_content, openai_key=""),
             link_href=link_href,
             date_text=date_text,
             title_text=title_text,
@@ -66,6 +72,7 @@ class NewsDataProvider:
             await child_page.close()
             news = NewsFactory.create_news(
                 sign=targeted_div_content,
+                date_original_text=date_text,
                 link_href=link_href,
                 date_text=date_text,
                 title_text=title_text,
