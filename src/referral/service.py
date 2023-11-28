@@ -55,6 +55,26 @@ class ReferralSubscriptionRepository:
         execute = await self.db.execute(query)
         referral_subscription = execute.scalars().one_or_none()
         return referral_subscription
+    
+    async def get_client(self, referral_subscription_code: str) -> Optional[ReferralSubscriptionReadable]:
+        query = select(ReferralSubscription).where(
+            ReferralSubscription.code == referral_subscription_code)
+        execute = await self.db.execute(query)
+        referral_subscription = execute.scalars().one_or_none()
+        return referral_subscription
+    
+
+    async def attach_clinet(self, referral_subscription_code: str, client_id: int):
+        referral_subscription = await self.get_client(referral_subscription_code)
+        new_referral_bundle = Referral(
+                subscription_id=referral_subscription.id,
+                referrer_id=client_id,
+                # Другие необходимые поля можно добавить здесь
+            )
+        self.db.add(new_referral_bundle)
+        await self.db.commit()
+        await self.db.refresh(new_referral_bundle)
+        return new_referral_bundle
 
     async def get_referral_subscriptions(self, queries: ReferralSubscriptionQueryable = None, paginate: Paginatable = None) -> Optional[List[ReferralSubscriptionReadable]]:
         queries = queries.dict() if queries else {}
@@ -88,6 +108,8 @@ class ReferralSubscriptionRepository:
             new_referral_subscription = await self.create_referral_subscription(referral_subscription_data)
 
             return new_referral_subscription
+    
+
 
 
 async def get_referral_subscription_repository(db: AsyncSession = Depends(get_async_session), api_key: str = Security(api_key_header), auth_repository: AuthRepository = Depends(get_auth_repository)) -> ReferralSubscriptionRepository:

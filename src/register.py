@@ -152,10 +152,10 @@ class Referral(SQLModel, table=True):
 
     # Relationships
     referrer_id: int = Field(default=None, foreign_key="clients.id")
-    referrer: Optional[Client] = Relationship(back_populates="referrals")  # The client who made the referral
+    referrer: Optional[Client] = Relationship(back_populates="referrals", sa_relationship_kwargs={"lazy": "selectin"})  # The client who made the referral
 
     subscription_id: int = Field(default=None, foreign_key="referralsubscriptions.id")
-    subscription: Optional[ReferralSubscription] = Relationship(back_populates="referrals")  # The subscription this referral belongs to
+    subscription: Optional[ReferralSubscription] = Relationship(back_populates="referrals", sa_relationship_kwargs={"lazy": "selectin"})  # The subscription this referral belongs to
     
 
  

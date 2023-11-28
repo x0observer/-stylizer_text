@@ -13,7 +13,7 @@ async def create_client(client: ClientBase, repository: ClientRepository = Depen
     return create_client
 
 
-@router.get("/get/{client_id}", response_model=ClientReadable)
+@router.get("/get/{client_id}", response_model=Optional[ClientReadable])
 async def get_client(
     client_id: int,
     repository: ClientRepository = Depends(get_client_repository),
@@ -29,7 +29,10 @@ async def get_client(
     referral_subscription = execute.scalars().one_or_none()
     # client.own_referral_subscription = referral_subscription
     orm_client = ClientReadable.from_orm(client)
-    orm_client.own_referral_subscription = referral_subscription
+    if referral_subscription:
+        orm_client.own_referral_subscription = referral_subscription
+    else:
+        orm_client.own_referral_subscription = None
     return orm_client
 
 

@@ -11,11 +11,36 @@ class ReferralSubscriptionBase(SQLModel):
 class ReferralSubscriptionCreate(ReferralSubscriptionBase):
     owner_id: Optional[int] = None
 
+
 class ReferralSubscriptionQueryable(ReferralSubscriptionBase):
     pass
+
 
 class ReferralSubscriptionUpdate(ReferralSubscriptionBase):
     pass
 
+
+class OwnerReferralBase(Readable):
+    first_name: Optional[str]
+    second_name: Optional[str]
+    alias: Optional[str]
+    uid: Optional[str]
+    is_activated: Optional[bool] = Field(False)
+
+
+class SelfReferralBase(Readable):
+    first_name: Optional[str]
+    second_name: Optional[str]
+    alias: Optional[str]
+    uid: Optional[str]
+    is_activated: Optional[bool] = Field(False)
+
+
+class ReferralBundle(Readable):
+    referrer_id: Optional[int]
+    referrer: Optional["SelfReferralBase"]
+
+
 class ReferralSubscriptionReadable(Readable, ReferralSubscriptionCreate):
-    pass
+    owner: Optional["OwnerReferralBase"]
+    referrals: Optional[List["ReferralBundle"]]
